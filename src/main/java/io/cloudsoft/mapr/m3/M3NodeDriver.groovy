@@ -1,28 +1,20 @@
 package io.cloudsoft.mapr.m3;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.util.List;
-import java.util.Map;
 
-import io.cloudsoft.mapr.M3
+import io.cloudsoft.mapr.M3;
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Throwables;
-import com.google.common.io.Closeables;
 
 import brooklyn.config.BrooklynLogging;
-import brooklyn.entity.basic.EntityLocal
-import brooklyn.entity.basic.lifecycle.StartStopDriver
+import brooklyn.entity.basic.EntityLocal;
+import brooklyn.entity.basic.lifecycle.StartStopDriver;
 import brooklyn.entity.trait.Startable;
-import brooklyn.location.Location
-import brooklyn.location.basic.SshMachineLocation
-import brooklyn.location.basic.jclouds.JcloudsLocation.JcloudsSshMachineLocation
-import brooklyn.util.internal.StreamGobbler;
+import brooklyn.location.Location;
+import brooklyn.location.basic.SshMachineLocation;
+import brooklyn.location.basic.jclouds.JcloudsLocation.JcloudsSshMachineLocation;
 
 public class M3NodeDriver implements StartStopDriver {
 
@@ -97,15 +89,11 @@ public class M3NodeDriver implements StartStopDriver {
         
     public void installJdk() {
         log.info("${entity}: installing JDK");
-        //this doesn't work -- lacks credential:
-//        if (machine in JcloudsSshMachineLocation) {
-//            ((JcloudsSshMachineLocation)machine).parent.getComputeService().runScriptOnNode(
-//                ((JcloudsSshMachineLocation)machine).node.getId(),
-//                InstallJDK.fromURL()
-//            );
-//        }
+        // we use Open JDK, despite MapR warnings, because it is freely available
+        // for Oracle JDK you will have to set up your own repo (and agree the license)
+        // (they are working on changing that model but it will take a while)
         
-        //this should work, but not in 1.4.0 because oracle have blocked download (fixed in head 1.4.1 and 1.5.0)
+        //this should work, in jclouds 1.4.1 or 1.5.0 (not in 1.4.0 because oracle have blocked download)
 //        ExecResponse result = ((JcloudsSshMachineLocation)machine).submitRunScript(InstallJDK.fromURL()).get();
         
         //this works on ubuntu (surprising that jdk not in default repos!)
@@ -121,6 +109,9 @@ public class M3NodeDriver implements StartStopDriver {
      * after this, node1 does some more things, then other nodes result when node1 is ready
      */
     public void runMaprPhase1() {
+        // useful to let machine quiet down, until jclouds 1.4.1 or 1.5.0 is released (not needed thereafter)
+        Thread.sleep(60*1000);
+        
         aptGetUpdate();
         aptGetInstall();
         configureMapR();

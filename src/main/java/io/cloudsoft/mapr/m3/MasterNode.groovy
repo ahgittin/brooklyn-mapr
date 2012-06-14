@@ -28,19 +28,19 @@ class MasterNode extends AbstractM3Node {
         [ "mapr-cldb", "mapr-jobtracker", "mapr-nfs", "mapr-webserver" ] + super.getAptPackagesToInstall();
     }
 
-    // TODO config param?
+    // TODO config param?  note, if this is not 'ubuntu', we have to create the user; see jclouds AdminAccess
     public String getUser() { "ubuntu" }
     public String getPassword() { "m4pr" }
     
-    public void runMaprPhase2() {
-        driver.startWarden();
-        
+    public void setupAdminUser(String user, String password) {
         //    On node 1, give full permission to the chosen administrative user using the following command:
         //    (and set a passwd)
-        driver.exec([ 
+        driver.exec([
             "echo \"${password}\n${password}\" | sudo passwd ${user}",
             "sudo /opt/mapr/bin/maprcli acl edit -type cluster -user ${user}:fc" ]);
-
+    }
+    
+    public void waitForLicense() {
         // MANUALLY: accept the license
         //    https://<node 1>:8443  -->  accept agreement, login, add license key
         log.info("${this} waiting for MapR LICENSE"+"""
@@ -52,9 +52,18 @@ class MasterNode extends AbstractM3Node {
 **********************************************************************""");
         execution.submit(DependentConfiguration.attributeWhenReady(this, LICENSE_APPROVED)).get();
         log.info("MapR LICENSE accepted, proceeding");
-        
+    }
+
+    public void startMasterServices() {
         // start the services
         driver.exec([ "sudo /opt/mapr/bin/maprcli node services -nodes ${getAttribute(HOSTNAME)} -nfs start" ]);
+    }    
+    
+    public void runMaprPhase2() {
+        driver.startWarden();
+        setupAdminUser(user, password);
+        waitForLicense();
+        startMasterServices();
         
         // not sure this sleep is necessary, but seems safer...
         Thread.sleep(10*1000);

@@ -33,9 +33,13 @@ public class M3 extends AbstractEntity implements Startable {
     public static final Logger log = LoggerFactory.getLogger(M3.class);
     
     public static BasicConfigKey<String> MASTER_HOSTNAME = [ String, "mapr.master.hostname", "" ];
+    
+    /** hostnames of all machines expected to run zookeeper */
     public static BasicConfigKey<List<String>> ZOOKEEPER_HOSTNAMES = [ List, "mapr.zk.hostnames", "" ];
+    /** configuration is set when all expected zookeepers have started the zookeeper process */
     public static BasicConfigKey<List<Boolean>> ZOOKEEPER_READY = [ List, "mapr.zk.ready", "" ];
     
+    /** configuration is set when the master node has come up (license approved etc) */
     public static BasicConfigKey<Boolean> MASTER_UP = [ Boolean, "mapr.master.serviceUp", "" ];
     
     MasterNode master = new MasterNode(this, name: "node1 (master)");
@@ -55,13 +59,8 @@ public class M3 extends AbstractEntity implements Startable {
         setConfig(MASTER_HOSTNAME, DependentConfiguration.attributeWhenReady(master, MasterNode.HOSTNAME));
         
         final def zookeeperNodes = ownedChildren.findAll({ (it in AbstractM3Node) && (it.isZookeeper()) });
-        setConfig(ZOOKEEPER_HOSTNAMES, listAttributesWhenReady(AbstractM3Node.HOSTNAME, zookeeperNodes));
-        setConfig(ZOOKEEPER_READY, listAttributesWhenReady(AbstractM3Node.ZOOKEEPER_UP, zookeeperNodes));
-    }
-    
-    // TODO promote this to brooklyn DependentConfiguration
-    public static <T> Task<List<T>> listAttributesWhenReady(Sensor<T> sensor, Iterable<Entity> entities, Predicate<T> readiness = null) {
-        new ParallelTask(entities.collect({ attributeWhenReady(it, sensor, readiness) }) );
+        setConfig(ZOOKEEPER_HOSTNAMES, DependentConfiguration.listAttributesWhenReady(AbstractM3Node.HOSTNAME, zookeeperNodes));
+        setConfig(ZOOKEEPER_READY, DependentConfiguration.listAttributesWhenReady(AbstractM3Node.ZOOKEEPER_UP, zookeeperNodes));
     }
     
 }

@@ -3,3 +3,4 @@ test-output
 .project
 .classpath
 .settings
+*.log

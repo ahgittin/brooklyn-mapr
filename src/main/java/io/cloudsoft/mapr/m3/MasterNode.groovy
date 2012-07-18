@@ -48,7 +48,7 @@ class MasterNode extends AbstractM3Node {
 * LICENSE must be accepted manually at:
 *   https://${getAttribute(HOSTNAME)}:8443
 * THEN invoke effector  setLicenseApproved true  at:
-*   https://localhost:8081
+*   http://localhost:8081
 **********************************************************************""");
         execution.submit(DependentConfiguration.attributeWhenReady(this, LICENSE_APPROVED)).get();
         log.info("MapR LICENSE accepted, proceeding");

@@ -48,7 +48,10 @@ abstract class AbstractM3Node extends SoftwareProcessEntity implements Startable
     public M3NodeDriver getDriver() { super.getDriver() }
 
     protected Map<String,Object> getProvisioningFlags(MachineProvisioningLocation location) {
-        Map flags = super.getProvisioningFlags(location); 
+        obtainProvisioningFlags(location);
+    }
+    protected Map<String,Object> obtainProvisioningFlags(MachineProvisioningLocation location) {
+        Map flags = [:]; //super.obtainProvisioningFlags(location); 
         flags.templateBuilder = new PortableTemplateBuilder().
             osFamily(OsFamily.UBUNTU).osVersionMatches("11.04").os64Bit(true).
             minRam(2560);

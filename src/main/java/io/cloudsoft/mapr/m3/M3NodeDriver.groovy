@@ -66,8 +66,15 @@ public class M3NodeDriver implements StartStopDriver {
         if (disks==null) throw new IllegalStateException("DISK_SETUP_SPEC is required for all nodes");
         
         log.info("${entity}: setting up disks");
-        if (disks.getCommandsToRun()) 
-            ((JcloudsSshMachineLocation)machine).execRemoteScript(disks.getCommandsToRun().toArray(new String[0]));
+        if (disks.getCommandsToRun()) {
+            try {
+                ((JcloudsSshMachineLocation)machine).execRemoteScript(disks.getCommandsToRun().toArray(new String[0]));
+            } catch (Exception e) {
+                log.warn("${entity}: error running custom commands for setting up disks; possibly a bug fixed in jclouds 1.4.1 (process will wait and script may run/finish normally): "+e);
+                log.debug("${entity}: details of error running custom commands for setting up disks; possibly a bug fixed in jclouds 1.4.1: "+e, e);
+                Thread.sleep(10*60*1000);
+            }
+        }
         machine.copyTo(new StringReader(disks.getPathsForDisksTxt().join("\n")), DISKS_TXT_FQP);
         exec([ "sudo /opt/mapr/server/disksetup -F ${DISKS_TXT_FQP}" ]);
         log.info("${entity}: disks set up, "+disks.getPathsForDisksTxt().join(" "));
@@ -98,7 +105,8 @@ public class M3NodeDriver implements StartStopDriver {
         
         //this works on ubuntu (surprising that jdk not in default repos!)
         exec([
-            "sudo add-apt-repository ppa:dlecan/openjdk",
+            "sudo add-apt-repository ppa:dlecan/openjdk < /dev/null",
+			// command above fails in ubuntu 12, but isn't needed there
             "sudo apt-get update",
             "sudo apt-get install -y --allow-unauthenticated openjdk-7-jdk"
         ]);

@@ -6,9 +6,17 @@ This project contains Brooklyn entities for the components of a MapR M3 system,
 and a sample application which deploys it to Amazon.
 
 
+### Temporary Note
+
+This has been rev-locked to Brooklyn 0.4.0-M2 branch.
+At the moment you must `git clone https://github.com/brooklyncentral/brooklyn` 
+then `git checkout 0.4.0-M2` and `mvn clean install` brooklyn,
+and use the binary which is created by this process (in `usage/dist/target`).
+
+
 ### Compile
 
-To compile it, simply `mvn clean install` in the project root.
+To compile brooklyn-mapr, simply `mvn clean install` in the project root.
 
 
 ### Run
@@ -23,7 +31,8 @@ To run it, either:
 * Grab all dependencies (using maven, or in your favourite IDE) and run the static `main` in `io.cloudsoft.mapr.MyM3App`
 
 After about 20 minutes, it should print out the URL of the MapR master node and the Brooklyn console.  
-You must manually accept the license in MapR, and then manually inform Brooklyn you have done so,
+You must manually accept the license in MapR (credentials defined in MyM3App), 
+and then manually inform Brooklyn you have done so (effector setLicenseApproved on master),
 then the cluster will continue to set up (another 2 minutes or so).
 
 Once fully booted, you can resize (scale out) the worker cluster, stop nodes, and see a few sensors.

@@ -50,7 +50,7 @@ class MasterNode extends AbstractM3Node {
 * THEN invoke effector  setLicenseApproved true  at:
 *   Brooklyn console -- e.g. http://localhost:8081
 **********************************************************************""");
-        execution.submit(DependentConfiguration.attributeWhenReady(this, LICENSE_APPROVED)).get();
+        getExecutionContext().submit(DependentConfiguration.attributeWhenReady(this, LICENSE_APPROVED)).get();
         log.info("MapR LICENSE accepted, proceeding");
     }
 

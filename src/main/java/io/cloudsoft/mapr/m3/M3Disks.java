@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 public class M3Disks {
 
@@ -27,8 +28,8 @@ public class M3Disks {
             this(Collections.<String>emptyList(), pathsForDisksTxt);
         }
         public DiskSetupSpecBuilder(List<String> commandsToRun, List<String> pathsForDisksTxt) {
-            this.commandsToRun = new ArrayList(commandsToRun);
-            this.pathsForDisksTxt = new ArrayList(pathsForDisksTxt);
+            this.commandsToRun = Lists.newArrayList(commandsToRun);
+            this.pathsForDisksTxt = Lists.newArrayList(pathsForDisksTxt);
         }
         
         @Override

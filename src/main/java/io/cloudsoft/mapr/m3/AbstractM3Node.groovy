@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory
 import brooklyn.entity.Entity
 import brooklyn.entity.basic.Lifecycle;
 import brooklyn.entity.basic.SoftwareProcessEntity
-import brooklyn.entity.basic.lifecycle.StartStopDriver;
 import brooklyn.entity.trait.Startable;
 import brooklyn.event.basic.BasicAttributeSensor;
 import brooklyn.event.basic.BasicConfigKey;
@@ -44,9 +43,16 @@ abstract class AbstractM3Node extends SoftwareProcessEntity implements Startable
         return result;
     }
 
-    public M3NodeDriver newDriver(SshMachineLocation location) { return new M3NodeDriver(this, location); }
-    public M3NodeDriver getDriver() { super.getDriver() }
-
+    @Override
+    public Class<? extends M3NodeDriver> getDriverInterface() {
+        return M3NodeDriver.class;
+    }
+        
+    @Override
+    public M3NodeDriver getDriver() {
+        return (M3NodeDriver) super.getDriver();
+    }
+        
     protected Map<String,Object> getProvisioningFlags(MachineProvisioningLocation location) {
         obtainProvisioningFlags(location);
     }

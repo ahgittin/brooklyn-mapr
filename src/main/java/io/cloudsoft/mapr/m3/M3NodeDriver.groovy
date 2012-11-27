@@ -10,13 +10,13 @@ import org.slf4j.LoggerFactory;
 
 import brooklyn.config.BrooklynLogging;
 import brooklyn.entity.basic.EntityLocal;
-import brooklyn.entity.basic.lifecycle.StartStopDriver;
+import brooklyn.entity.basic.SoftwareProcessDriver;
 import brooklyn.entity.trait.Startable;
 import brooklyn.location.Location;
 import brooklyn.location.basic.SshMachineLocation;
 import brooklyn.location.basic.jclouds.JcloudsLocation.JcloudsSshMachineLocation;
 
-public class M3NodeDriver implements StartStopDriver {
+public class M3NodeDriver implements SoftwareProcessDriver {
 
     public static final Logger log = LoggerFactory.getLogger(M3NodeDriver.class);
     public static final Logger logSsh = LoggerFactory.getLogger(BrooklynLogging.SSH_IO);
@@ -145,6 +145,11 @@ public class M3NodeDriver implements StartStopDriver {
     }
 
     @Override
+    public void kill() {
+        stop();
+    }
+
+    @Override
     public boolean isRunning() {
         // TODO this is a poor man's test ... exec 'mapr-warden status' ?
         return running;
@@ -162,4 +167,8 @@ public class M3NodeDriver implements StartStopDriver {
         return result;
     }
 
+    @Override
+    public void rebind() {
+        // no-op
+    }
 }

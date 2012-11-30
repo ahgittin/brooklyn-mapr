@@ -12,6 +12,7 @@ import io.cloudsoft.mapr.m3.AbstractM3Node
 import io.cloudsoft.mapr.m3.MasterNode
 import io.cloudsoft.mapr.m3.WorkerNode
 import io.cloudsoft.mapr.m3.ZookeeperWorkerNode
+import brooklyn.enricher.basic.SensorPropagatingEnricher;
 import brooklyn.entity.Entity
 import brooklyn.entity.basic.AbstractEntity
 import brooklyn.entity.basic.BasicConfigurableEntityFactory
@@ -61,6 +62,8 @@ public class M3 extends AbstractEntity implements Startable {
         final def zookeeperNodes = ownedChildren.findAll({ (it in AbstractM3Node) && (it.isZookeeper()) });
         setConfig(ZOOKEEPER_HOSTNAMES, DependentConfiguration.listAttributesWhenReady(AbstractM3Node.HOSTNAME, zookeeperNodes));
         setConfig(ZOOKEEPER_READY, DependentConfiguration.listAttributesWhenReady(AbstractM3Node.ZOOKEEPER_UP, zookeeperNodes));
+        
+        SensorPropagatingEnricher.newInstanceListeningTo(master, MasterNode.MAPR_URL).addToEntityAndEmitAll(this);
     }
     
 }

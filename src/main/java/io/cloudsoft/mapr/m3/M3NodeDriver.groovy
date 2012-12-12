@@ -160,6 +160,9 @@ fi
         } catch (Exception e) {
             Throwables.propagate(e);
         } finally {
+            // as a fallback
+            installJdkFromDlecan();
+        
             getLocation().releaseMutex("install:" + getLocation().getName());
         }
 
@@ -169,23 +172,32 @@ fi
         // "sudo apt-get install -y --allow-unauthenticated openjdk-7-jdk"
     }    
     
-    public void installJdk_PPA_DLECAN() {
-        log.info("${entity}: installing JDK");
-        // we use Open JDK, despite MapR warnings, because it is freely available
-        // for Oracle JDK you will have to set up your own repo (and agree the license)
-        // (they are working on changing that model but it will take a while)
+    public void installJdkFromDlecan() {
+        int result = getLocation().execCommands("check java", Arrays.asList("java"));
+        if (result==0) return;
         
-        //this should work, in jclouds 1.4.1 or 1.5.0 (not in 1.4.0 because oracle have blocked download)
-//        ExecResponse result = ((JcloudsSshMachineLocation)machine).submitRunScript(InstallJDK.fromURL()).get();
-        
-        //this works on ubuntu (surprising that jdk not in default repos!)
-        exec([
+        log.info("${entity}: failing back to legacy JDK install");
+        //this seems to work best on ubuntu (jdk not in default repos for some images!)
+        result = exec([
             "sudo add-apt-repository ppa:dlecan/openjdk < /dev/null",
 			// command above fails in ubuntu 12, but isn't needed there
             "sudo apt-get update",
             "sudo apt-get install -y --allow-unauthenticated openjdk-7-jdk"
         ]);
-        log.info("${entity}: installed JDK");
+        if (result==0)
+            log.info("${entity}: installed JDK from legacy source");
+        else {
+            log.warn("${entity}: failed to install JDK from legacy source; trying JDK6");
+            result = exec([
+                "sudo apt-get install -y --allow-unauthenticated openjdk-6-jdk"
+            ]);
+            if (result==0)
+                log.info("${entity}: installed JDK 6");
+            else {
+                log.warn("${entity}: failed to install JDK 6 from legacy source; failng");
+                throw new IllegalStateException("Unable to install JDK 6 or 7 on ${entity}")
+            }
+        }
     }
     
     /** does common setup up to the point where zookeeper is running;

@@ -3,6 +3,7 @@ package io.cloudsoft.mapr
 import io.cloudsoft.mapr.m3.AbstractM3Node
 import io.cloudsoft.mapr.m3.M3Disks
 import io.cloudsoft.mapr.m3.MasterNode
+import brooklyn.enricher.basic.SensorPropagatingEnricher
 import brooklyn.entity.basic.AbstractApplication
 import brooklyn.launcher.BrooklynLauncher
 import brooklyn.launcher.BrooklynServerDetails
@@ -36,6 +37,9 @@ public class MyM3App extends AbstractApplication {
                     "sudo truncate -s 20G /mnt/mapr-storagefile1",
                     "sudo truncate -s 10G /mnt/mapr-storagefile2").
                 build() );
+        
+        // show URL at top level
+        SensorPropagatingEnricher.newInstanceListeningTo(m3, MasterNode.MAPR_URL).addToEntityAndEmitAll(this);
     }
 
     // can start in AWS by running this -- or use brooklyn CLI/REST for most clouds, or programmatic/config for set of fixed IP machines

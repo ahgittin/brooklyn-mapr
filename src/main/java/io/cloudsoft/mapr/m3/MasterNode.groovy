@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import brooklyn.config.render.RendererHints;
 import brooklyn.entity.Effector;
 import brooklyn.entity.basic.Description
 import brooklyn.entity.basic.MethodEffector
@@ -22,6 +23,9 @@ class MasterNode extends AbstractM3Node {
     public static final Logger log = LoggerFactory.getLogger(MasterNode.class);
     
     public static final BasicAttributeSensor<String> MAPR_URL = [ String, "mapr.url", "URL where MapR can be accessed" ];
+    static {
+        RendererHints.register(MAPR_URL, new RendererHints.NamedActionWithUrl("Open"));
+    }
     
     public static final BasicAttributeSensor<String> LICENSE_APPROVED = [ String, "mapr.master.license", "this attribute is set when the license is approved (manually)" ];
     public static final Effector<Void> SET_LICENSE_APPROVED = new MethodEffector(MasterNode.&setLicenseApproved);
@@ -43,7 +47,7 @@ class MasterNode extends AbstractM3Node {
         //    On node 1, give full permission to the chosen administrative user using the following command:
         //    (and set a passwd)
         driver.exec([
-            "adduser ${user} < /dev/null || true",
+            "sudo adduser ${user} < /dev/null || true",
             "echo \"${password}\n${password}\" | sudo passwd ${user}",
             "sudo /opt/mapr/bin/maprcli acl edit -type cluster -user ${user}:fc" ]);
     }

@@ -25,7 +25,7 @@ To run it, either:
 
 * Download and install the `brooklyn` CLI tool from http://brooklyncentral.github.com/ and run in the project root:
 
-  export BROOKLYN_CLASSPATH=target/brooklyn-mapr-0.0.1-SNAPSHOT.jar 
+  export BROOKLYN_CLASSPATH=target/brooklyn-mapr-0.1.0-SNAPSHOT.jar 
   brooklyn launch -a io.cloudsoft.mapr.MyM3App -l aws-ec2:us-east-1
 
 * Grab all dependencies (using maven, or in your favourite IDE) and run the static `main` in `io.cloudsoft.mapr.MyM3App`

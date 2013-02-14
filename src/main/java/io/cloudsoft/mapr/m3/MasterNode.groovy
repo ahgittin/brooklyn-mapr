@@ -29,29 +29,20 @@ class MasterNode extends AbstractM3Node {
     
     public static final BasicAttributeSensor<String> LICENSE_APPROVED = [ String, "mapr.master.license", "this attribute is set when the license is approved (manually)" ];
     public static final Effector<Void> SET_LICENSE_APPROVED = new MethodEffector(MasterNode.&setLicenseApproved);
-    
-    public static BasicConfigKey<String> MAPR_USERNAME = [ String, "mapr.username", "initial user to create for mapr", "mapr" ];
-    public static BasicConfigKey<String> MAPR_PASSWORD = [ String, "mapr.password", "initial password for initial user" ];
-    
+        
     public boolean isZookeeper() { return true; }
     
     public List<String> getAptPackagesToInstall() {
         [ "mapr-cldb", "mapr-jobtracker", "mapr-nfs", "mapr-webserver" ] + super.getAptPackagesToInstall();
     }
 
-    // TODO config param?  note, if this is not 'ubuntu', we have to create the user; see jclouds AdminAccess
-    public String getUser() { getConfig(MAPR_USERNAME) }
-    public String getPassword() { getConfig(MAPR_PASSWORD) }
-    
-    public void setupAdminUser(String user, String password) {
-        //    On node 1, give full permission to the chosen administrative user using the following command:
-        //    (and set a passwd)
-        driver.exec([
-            "sudo adduser ${user} < /dev/null || true",
-            "echo \"${password}\n${password}\" | sudo passwd ${user}",
+    public void setupAdminUserMapr(String user, String password) {
+        // TODO this should happen on all nodes
+        // (but isn't needed except for metrics)
+        exec([
             "sudo /opt/mapr/bin/maprcli acl edit -type cluster -user ${user}:fc" ]);
     }
-    
+
     public void waitForLicense() {
         // MANUALLY: accept the license
         //    https://<node 1>:8443  -->  accept agreement, login, add license key
@@ -68,13 +59,13 @@ class MasterNode extends AbstractM3Node {
 
     public void startMasterServices() {
         // start the services
-        driver.exec([ "sudo /opt/mapr/bin/maprcli node services -nodes ${getAttribute(HOSTNAME)} -nfs start" ]);
+//        driver.exec([ "sudo /opt/mapr/bin/maprcli node services -nodes ${getAttribute(HOSTNAME)} -nfs start" ]);
     }    
     
     public void runMaprPhase2() {
         driver.startWarden();
-        setupAdminUser(user, password);
         startMasterServices();
+        setupAdminUserMapr(getUser(), getPassword());
         
         // not sure this sleep is necessary, but seems safer...
         Thread.sleep(10*1000);

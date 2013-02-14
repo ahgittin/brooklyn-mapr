@@ -25,7 +25,7 @@ public class M3NodeDriver extends AbstractSoftwareProcessSshDriver implements So
     public static final Logger log = LoggerFactory.getLogger(M3NodeDriver.class);
     public static final Logger logSsh = LoggerFactory.getLogger(BrooklynLogging.SSH_IO);
 
-    public static final String APT_GET_LINE = "deb http://package.mapr.com/releases/v1.2.7/ubuntu/ mapr optional";
+    public static final String APT_GET_LINE = "deb http://package.mapr.com/releases/v2.1.1/ubuntu/ mapr optional";
     public static final String APT_GET_FILE = "/etc/apt/sources.list";
     
     public static final String DISKS_TXT_FQP = "/tmp/disks.txt";
@@ -47,7 +47,7 @@ elif [ -d /etc/yum.repos.d ] ; then
     sudo sh -c 'cat > /etc/yum.repos.d/maprtech.repo << __EOF__
 [maprtech]
 name=MapR Technologies
-baseurl=http://package.mapr.com/releases/v1.2.7/redhat/
+baseurl=http://package.mapr.com/releases/v2.1.1/redhat/
 enabled=1
 gpgcheck=0
 protect=1
@@ -75,13 +75,21 @@ fi
             ])
     }
     
+    public void setupAdminUserOs(String user, String password) {
+        // create the user
+        // TODO ssh keys
+        exec([
+            "sudo adduser ${user} < /dev/null || true",
+            "echo \"${password}\n${password}\" | sudo passwd ${user}"])
+    }
+
     public void configureMapR() {
         String masterHostname = entity.getConfig(M3.MASTER_HOSTNAME);
         String zkHostnames = entity.getConfig(M3.ZOOKEEPER_HOSTNAMES).join(",");
         exec([ 
             // cldb (java) complains it needs at least 160k, on centos with openjdk7
-            "if [ -f /etc/init.d/mapr-cldb ] ; then "+
-                "sed -i s/XX:ThreadStackSize=128/XX:ThreadStackSize=256/ /etc/init.d/mapr-cldb ; fi",
+//            "if [ -f /etc/init.d/mapr-cldb ] ; then "+
+//                SUDO "sed -i s/XX:ThreadStackSize=128/XX:ThreadStackSize=256/ /etc/init.d/mapr-cldb ; fi",
             // now do the configuration
             "sudo /opt/mapr/server/configure.sh -C ${masterHostname} -Z ${zkHostnames}" ]);
     } 
@@ -209,6 +217,7 @@ fi
 //        
         repoUpdate();
         repoInstall();
+        setupAdminUserOs(entity.user, entity.password);
         configureMapR();
         setupDisks();
         if (entity.isZookeeper()) {

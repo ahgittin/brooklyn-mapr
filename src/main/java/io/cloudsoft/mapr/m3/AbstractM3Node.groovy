@@ -35,6 +35,12 @@ abstract class AbstractM3Node extends SoftwareProcessEntity implements Startable
         setAttribute(SERVICE_STATE, Lifecycle.CREATED)
     }
     
+    public static BasicConfigKey<String> MAPR_USERNAME = [ String, "mapr.username", "initial user to create for mapr", "mapr" ];
+    public static BasicConfigKey<String> MAPR_PASSWORD = [ String, "mapr.password", "initial password for initial user" ];
+
+    public String getUser() { getConfig(MAPR_USERNAME) }
+    public String getPassword() { getConfig(MAPR_PASSWORD) }
+    
     public boolean isZookeeper() { return false; }
     
     public List<String> getAptPackagesToInstall() {

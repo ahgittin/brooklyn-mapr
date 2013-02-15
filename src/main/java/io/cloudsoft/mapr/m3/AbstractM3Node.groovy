@@ -76,7 +76,7 @@ abstract class AbstractM3Node extends SoftwareProcessEntity implements Startable
             ;
         return flags;        
     }
-    
+
     public abstract void runMaprPhase2();
     
 }

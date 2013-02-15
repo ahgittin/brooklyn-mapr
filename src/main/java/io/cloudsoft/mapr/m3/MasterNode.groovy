@@ -26,48 +26,29 @@ class MasterNode extends AbstractM3Node {
     static {
         RendererHints.register(MAPR_URL, new RendererHints.NamedActionWithUrl("Open"));
     }
-    
-    public static final BasicAttributeSensor<String> LICENSE_APPROVED = [ String, "mapr.master.license", "this attribute is set when the license is approved (manually)" ];
-    public static final Effector<Void> SET_LICENSE_APPROVED = new MethodEffector(MasterNode.&setLicenseApproved);
-        
+            
     public boolean isZookeeper() { return true; }
     
     public List<String> getAptPackagesToInstall() {
         [ "mapr-cldb", "mapr-jobtracker", "mapr-nfs", "mapr-webserver" ] + super.getAptPackagesToInstall();
     }
 
-    public void setupAdminUserMapr(String user, String password) {
-        // TODO this should happen on all nodes
-        // (but isn't needed except for metrics)
-        exec([
-            "sudo /opt/mapr/bin/maprcli acl edit -type cluster -user ${user}:fc" ]);
-    }
-
-    public void waitForLicense() {
-        // MANUALLY: accept the license
-        //    https://<node 1>:8443  -->  accept agreement, login, add license key
-        log.info("${this} waiting for MapR LICENSE"+"""
-**********************************************************************
-* LICENSE must be accepted manually at:
-*   MapR console -- https://${getAttribute(HOSTNAME)}:8443
-* THEN invoke effector  setLicenseApproved true  at:
-*   Brooklyn console -- e.g. http://localhost:8081
-**********************************************************************""");
-        getExecutionContext().submit(DependentConfiguration.attributeWhenReady(this, LICENSE_APPROVED)).get();
-        log.info("MapR LICENSE accepted, proceeding");
-    }
-
     public void startMasterServices() {
-        // start the services
-//        driver.exec([ "sudo /opt/mapr/bin/maprcli node services -nodes ${getAttribute(HOSTNAME)} -nfs start" ]);
+        // start the services -- no longer needed in v2
+//        if (...VERSION.startsWith("v1."))
+//            driver.exec([ "sudo /opt/mapr/bin/maprcli node services -nodes ${getAttribute(HOSTNAME)} -nfs start" ]);
     }    
     
     public void runMaprPhase2() {
         driver.startWarden();
         startMasterServices();
-        setupAdminUserMapr(getUser(), getPassword());
         
-        // not sure this sleep is necessary, but seems safer...
+        // TODO this should happen on all nodes
+        // (but isn't needed except for metrics)
+        // since v2 seems this must be done after warden is started?
+        driver.setupAdminUserMapr(getUser(), getPassword());
+        
+        // not sure this sleep is necessary
         Thread.sleep(10*1000);
         setAttribute(MAPR_URL, "https://${getAttribute(HOSTNAME)}:8443")
     }
@@ -76,12 +57,6 @@ class MasterNode extends AbstractM3Node {
         if (!getPassword())
             throw new IllegalArgumentException("configuration "+MAPR_PASSWORD.getName()+" must be specified");
         super.start(locations);
-    }
-    
-    @Description("Sets an attribute on the entity to indicate that the license has been approved")
-    public void setLicenseApproved(@NamedParameter("text") String text) {
-        log.info("MapR master {} got license approved invoked with: {}", this, text);
-        setAttribute(LICENSE_APPROVED, text);
     }
     
 }

@@ -25,6 +25,7 @@ public class M3NodeDriver extends AbstractSoftwareProcessSshDriver implements So
     public static final Logger log = LoggerFactory.getLogger(M3NodeDriver.class);
     public static final Logger logSsh = LoggerFactory.getLogger(BrooklynLogging.SSH_IO);
 
+    // TODO replace 2.1.1 with SUGGESTED_VERSION config key 
     public static final String APT_GET_LINE = "deb http://package.mapr.com/releases/v2.1.1/ubuntu/ mapr optional";
     public static final String APT_GET_FILE = "/etc/apt/sources.list";
     
@@ -83,11 +84,17 @@ fi
             "echo \"${password}\n${password}\" | sudo passwd ${user}"])
     }
 
+    public void setupAdminUserMapr(String user, String password) {
+        exec([
+            "sudo /opt/mapr/bin/maprcli acl edit -type cluster -user ${user}:fc" ]);
+    }
+
     public void configureMapR() {
         String masterHostname = entity.getConfig(M3.MASTER_HOSTNAME);
         String zkHostnames = entity.getConfig(M3.ZOOKEEPER_HOSTNAMES).join(",");
         exec([ 
             // cldb (java) complains it needs at least 160k, on centos with openjdk7
+            // problem in v1.7.x but fixed by v2.1.1
 //            "if [ -f /etc/init.d/mapr-cldb ] ; then "+
 //                SUDO "sed -i s/XX:ThreadStackSize=128/XX:ThreadStackSize=256/ /etc/init.d/mapr-cldb ; fi",
             // now do the configuration

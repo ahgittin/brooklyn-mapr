@@ -39,7 +39,7 @@ public class MyM3App extends AbstractApplication {
                 build() );
         
         // show URL at top level
-        SensorPropagatingEnricher.newInstanceListeningTo(m3, MasterNode.MAPR_URL).addToEntityAndEmitAll(this);
+        SensorPropagatingEnricher.newInstanceListeningTo(m3, MasterNode.MAPR_URL).addToEntityAndEmitAll(this);        
     }
 
     // can start in AWS by running this -- or use brooklyn CLI/REST for most clouds, or programmatic/config for set of fixed IP machines
@@ -54,6 +54,8 @@ public class MyM3App extends AbstractApplication {
 
         List<Location> locations = server.getManagementContext().getLocationRegistry().resolve(args ?: [DEFAULT_LOCATION])
         app.start(locations)
+
+        log.info("RUNNING MapR at "+app.getAttribute(MasterNode.MAPR_URL))
     }
     
 }

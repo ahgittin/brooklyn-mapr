@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <groupId>io.cloudsoft.mapr</groupId>
     <artifactId>brooklyn-mapr</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    
+
     <name>Brooklyn MapR Descriptor</name>
 
     <properties>
@@ -13,7 +13,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <brooklyn.version>0.5.0-M1</brooklyn.version>
-        <groovy.version>1.8.6</groovy.version>
         <testng.version>6.7</testng.version>
     </properties>
 
@@ -22,6 +21,12 @@
             <groupId>io.brooklyn</groupId>
             <artifactId>brooklyn-all</artifactId>
             <version>${brooklyn.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -29,6 +34,17 @@
             <version>${testng.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.6.4</version>
+        </dependency>
+
     </dependencies>
 
     <repositories>
@@ -36,15 +52,15 @@
             <id>cloudsoft-releases</id>
             <url>http://developers.cloudsoftcorp.com/download/maven2/</url>
         </repository>
-            <repository>
-                <id>libs-snapshot-local</id>
-                <url>http://ccweb.cloudsoftcorp.com/maven/libs-snapshot-local/</url>
-                <snapshots>
-                    <enabled>true</enabled>
-                    <updatePolicy>never</updatePolicy>
-                    <checksumPolicy>fail</checksumPolicy>
-               </snapshots>
-         </repository>
+        <repository>
+            <id>libs-snapshot-local</id>
+            <url>http://ccweb.cloudsoftcorp.com/maven/libs-snapshot-local/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
+        </repository>
     </repositories>
 
     <build>
@@ -83,7 +99,6 @@
                     <version>2.8</version>
                     <configuration>
                         <additionalProjectnatures>
-                            <projectnature>org.eclipse.jdt.groovy.core.groovyNature</projectnature>
                             <projectnature>org.maven.ide.eclipse.maven2Nature</projectnature>
                         </additionalProjectnatures>
                     </configuration>
@@ -91,28 +106,6 @@
             </plugins>
         </pluginManagement>
         <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <compilerId>groovy-eclipse-compiler</compilerId>
-                    <fork>true</fork>
-                    <verbose>false</verbose>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-eclipse-compiler</artifactId>
-                        <version>2.6.0-01</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-eclipse-batch</artifactId>
-                        <version>1.8.6-01</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
             <plugin>
                     <!-- 'release' is not used; easier just to checkout, tag, `mvn deploy` manually
                          with -Dbrooklyn.deployTo=TARGET ... and note we need to update docs and examples, 

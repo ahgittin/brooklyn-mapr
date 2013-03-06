@@ -1,5 +1,12 @@
 package io.cloudsoft.mapr.m3;
 
+import java.util.List;
+import java.util.Map;
+
+import org.jclouds.compute.domain.OsFamily;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import brooklyn.entity.Entity;
 import brooklyn.entity.basic.Lifecycle;
 import brooklyn.entity.basic.SoftwareProcessEntity;
@@ -8,15 +15,10 @@ import brooklyn.event.basic.BasicAttributeSensor;
 import brooklyn.event.basic.BasicConfigKey;
 import brooklyn.location.MachineProvisioningLocation;
 import brooklyn.location.basic.jclouds.templates.PortableTemplateBuilder;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import org.jclouds.compute.domain.OsFamily;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.ImmutableSet;
 
 public abstract class AbstractM3Node extends SoftwareProcessEntity implements Startable {
 
@@ -86,15 +88,22 @@ public abstract class AbstractM3Node extends SoftwareProcessEntity implements St
    }
 
    protected Map<String, Object> obtainProvisioningFlags(MachineProvisioningLocation location) {
-      Map<String, Object> flags = Maps.newLinkedHashMap();
-
+      Map flags = super.obtainProvisioningFlags(location); 
+      Iterable<Integer> superInboundPorts = (Iterable<Integer>) flags.get("inboundPorts");
+      
       flags.put("templateBuilder", new PortableTemplateBuilder().
               osFamily(OsFamily.UBUNTU).osVersionMatches("11.04").os64Bit(true).
               minRam(2560));
 
       flags.put("userName", "ubuntu");
-      flags.put("inboundPorts", ImmutableList.of(22, 2048, 3306, 5660, 5181, 7221, 7222, 8080, 8443, 9001, 9997, 9998,
-              50030, 50060, 60000, 2888, 3888));
+      
+      // from: http://www.mapr.com/doc/display/MapR/Ports+Used+by+MapR
+      // 3888 discovered also to be needed; 2888 included for good measure
+      flags.put("inboundPorts", ImmutableSet.<Integer>builder()
+              .addAll(ImmutableList.of(22, 2048, 3306, 5660, 5181, 7221, 7222, 8080, 8443, 9001, 9997, 9998, 50030, 50060, 60000, 2888, 3888))
+              .addAll(superInboundPorts == null ? ImmutableList.<Integer>of() : superInboundPorts)
+              .build());
+      
       return flags;
    }
 

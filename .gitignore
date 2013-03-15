@@ -4,3 +4,5 @@ test-output
 .classpath
 .settings
 *.log
+.idea
+*.iml

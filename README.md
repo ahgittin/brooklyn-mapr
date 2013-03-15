@@ -6,14 +6,6 @@ This project contains Brooklyn entities for the components of a MapR M3 system,
 and a sample application which deploys it to Amazon.
 
 
-### Temporary Note
-
-This has been rev-locked to Brooklyn 0.4.0-M2 branch.
-At the moment you must `git clone https://github.com/brooklyncentral/brooklyn` 
-then `git checkout 0.4.0-M2` and `mvn clean install` brooklyn,
-and use the binary which is created by this process (in `usage/dist/target`).
-
-
 ### Compile
 
 To compile brooklyn-mapr, simply `mvn clean install` in the project root.
